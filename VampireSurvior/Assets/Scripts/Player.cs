@@ -2,9 +2,16 @@
 
 public class Player : MonoBehaviour
 {
+    [Header("플레이어")]
     private CharacterController cc; //캐릭터 컨트롤러
     public float speed;
     private Vector3 lookTarget; //캐릭터가 바라볼 방향 시선
+
+    [Header("공격")]
+    public Transform firePos; //총알 발사 위치
+    public GameObject bulletPrefab; //총알 프리팹
+    public float bulletOffset; //총알간격
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -16,6 +23,7 @@ public class Player : MonoBehaviour
     {
         PlayerMove();
         PlayerRotate();
+        PlayerFire();
     }
 
     //플레이어 이동 함수
@@ -43,5 +51,31 @@ public class Player : MonoBehaviour
             Quaternion rotation = Quaternion.LookRotation(relation);
             transform.rotation = rotation;
         }
+    }
+
+    //플레이어 격발 함수
+    void PlayerFire()
+    {
+        //왼쪽 마우스 버튼을 누른다면
+        if (Input.GetButtonDown("Fire1"))
+        {
+            //i가 0에서 시작해서 3보다 같거나 클때까지 반복하는 함수 -> 0, 1, 2
+            for( int i = 0; i < 3; i++)
+            {
+                CreateBullet(); //총알 생성 함수 호출
+            }     
+
+        }
+    }
+
+    //총알 생성함수
+    void CreateBullet()
+    {
+        //bulletoffset 반경만큼의 구체 범위와 격발 위치를 더한 범위에서 무작위로 Vector3값을 추출한다
+        Vector3 offset = Random.insideUnitSphere * bulletOffset + firePos.position;
+        //총알을 생성한다 //생성자(원본,초기위치,초기회전값)
+        GameObject bullet = Instantiate(bulletPrefab, offset, firePos.rotation);
+
+        Destroy(bullet, 3.0f); //3총 뒤에 총알 삭제
     }
 }
