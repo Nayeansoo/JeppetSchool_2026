@@ -3,7 +3,13 @@ using UnityEngine.UI; //UGUI사용
 
 public class Player : MonoBehaviour
 {
+    public enum PlayerLiveState
+    {
+        Live,Dead
+    }
+
     [Header("플레이어")]
+    public PlayerLiveState playerLiveState = PlayerLiveState.Live; //플레이어 생존 상태
     private CharacterController cc; //캐릭터 컨트롤러
     public Animator anim; //애니메이터
     public float speed;
@@ -44,10 +50,18 @@ public class Player : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        PlayerMove();
-        PlayerRotate();
-        PlayerFire();
-        PlayerHP();
+        switch (playerLiveState)
+        {
+            case PlayerLiveState.Live:
+                {
+
+                    PlayerMove();
+                    PlayerRotate();
+                    PlayerFire();
+                    PlayerHP();
+                    break;
+                }
+        }
     }
 
     //플레이어 이동 함수
@@ -145,6 +159,7 @@ public class Player : MonoBehaviour
         }
     }
 
+    //플레이어 HP함수
     void PlayerHP()
     {
         switch (hpState) //HP 상태
@@ -153,12 +168,19 @@ public class Player : MonoBehaviour
                 {
                     //Hp슬라이더의 값이 hpPer로 hpSpeed의 속도로 일정하게 이동해간다
                     hpSlider.value = Mathf.MoveTowards(hpSlider.value, hpPer, hpSpeed * Time.deltaTime);
+
                     //hp슬라이더의 값과 hpPer와 같다면
                     if (hpSlider.value == hpPer)
                     {
+                        //HP슬라이더 값이 0이라면
+                        if (hpSlider.value == 0)
+                        {
+                            anim.SetInteger("Live", 2); //사망애니메이션 
+                            playerLiveState = PlayerLiveState.Dead; //사망
+                        }
                         hpState = HPState.None; //상태 초기화
-                    }
-                    break;
+                    }                   
+                        break;
                 }
         }
     }
@@ -176,8 +198,16 @@ public class Player : MonoBehaviour
 
     public void PlayerDamageOn(float damage)
     {
-        playerHP -= damage; //플레이어에 HP에 Damage만큼 감소시킨다
-        hpPer = playerHP / maxHP; //현재 플레이어 HP를 전체 HP로 나눈다
+        //플레이어 HP가 damage보다 많다면
+        if (playerHP > damage)
+        {
+            playerHP -= damage; //플레이어에 HP에 Damage만큼 감소시킨다
+        }
+        else
+        {
+            playerHP = 0; //플레이어 HP는 0
+        }
+            hpPer = playerHP / maxHP; //현재 플레이어 HP를 전체 HP로 나눈다
         hpState =  HPState.HPDown; //Hp감소 상태로 변경 
     }
 }

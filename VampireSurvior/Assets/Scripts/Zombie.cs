@@ -15,7 +15,7 @@ public class Zombie : MonoBehaviour
         Idle, Move, Attack, Dead
     }
     public ActionState actionState = ActionState.Idle; //행동상태
-    private GameObject Player; //플레이어
+    private GameObject player; //플레이어
     private NavMeshAgent agent; //내브매쉬 에이전트
     public Animator anim; //애니메이터
 
@@ -30,6 +30,7 @@ public class Zombie : MonoBehaviour
     private float attackTime; //공격시간
     private float delayTime; //지연시간
     public AnimationClip attackClip; //공격 애니메이션 클립
+    public ZombieAttack zombieAttack; //좀비 공격
 
     [Header("좀비 HP")]
     public float zombieHP; //좀비HP
@@ -44,7 +45,7 @@ public class Zombie : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        Player = GameObject.FindGameObjectWithTag("Player"); //플레이어 초기화
+        player = GameObject.FindGameObjectWithTag("Player"); //플레이어 초기화
         agent = GetComponent<NavMeshAgent>(); //내브매쉬 에이전트 초기화
     }
 
@@ -68,7 +69,7 @@ public class Zombie : MonoBehaviour
         {
             case ActionState.Idle: //대기상태
                 {
-                    if (Player)
+                    if (player)
                     {
                         agent.isStopped = false; //이동중지 해제
                         AnimOn(1); //이동 애니메이션 실행
@@ -78,20 +79,28 @@ public class Zombie : MonoBehaviour
                 }
             case ActionState.Move: //이동상태
                 {
-                    if (Player)
+                    if (player)
                     {
-                        agent.SetDestination(Player.transform.position); //플레이어를 향해 이동한다
+                        agent.SetDestination(player.transform.position); //플레이어를 향해 이동한다
 
                         //플레이어와 좀비 사이에 거리를 Float로 반환한다
-                        float dist = Vector3.Distance(transform.position, Player.transform.position);
+                        float dist = Vector3.Distance(transform.position, player.transform.position);
 
                         //공격 반경 안에 플레이어가 들어왔을때
                         if(dist <= attackRange)
                         {
-                            agent.isStopped = true; //이동중지
-                            AnimOn(2); //공격 애니메이션 실행
-                            attackState = AttackState.Attack; //공격중 상태로 변환
-                            actionState = ActionState.Attack; //공격 상태로 변환
+                            //플레이어 생존 상태
+                            switch (player.GetComponent<Player>().playerLiveState)
+                            {
+                                case Player.PlayerLiveState.Live: //생존하고 있는 경우
+                                    {
+                                        agent.isStopped = true; //이동중지
+                                        AnimOn(2); //공격 애니메이션 실행
+                                        attackState = AttackState.Attack; //공격중 상태로 변환
+                                        actionState = ActionState.Attack; //공격 상태로 변환
+                                        break;
+                                    }
+                            }
                         }
                     }
                     break;
@@ -106,6 +115,7 @@ public class Zombie : MonoBehaviour
                                 //공격 시간이 공격 클립의 25%를 넘어설 경우
                                 if(attackTime >= attackClip.length * 0.25f)
                                 {
+                                    zombieAttack.ZombieAttackOn(); //좀비 공격 감지기 활성화
                                     AnimOn(0); //대기동작
                                     attackTime = 0;
                                     delayTime = 0;
@@ -115,14 +125,22 @@ public class Zombie : MonoBehaviour
                             }
                         case AttackState.Delay: //지연중
                             {
-                                attackTime += Time.deltaTime; //공격시간재생
-                                //지연 시간이 공격클립의 75%를 넘어설 경우
-                                if (attackTime >= attackClip.length * 0.75f * 2.0f)
+                                //플레이어 생존 상태
+                                switch (player.GetComponent<Player>().playerLiveState)
                                 {
-                                    AnimOn(2); //대기동작
-                                    attackTime = 0;
-                                    delayTime = 0;
-                                    attackState = AttackState.Attack;
+                                    case Player.PlayerLiveState.Live: //생존하고 있는 경우
+                                        {
+                                            attackTime += Time.deltaTime; //공격시간재생
+                                                                          //지연 시간이 공격클립의 75%를 넘어설 경우
+                                            if (attackTime >= attackClip.length * 0.75f * 2.0f)
+                                            {
+                                                AnimOn(2); //대기동작
+                                                attackTime = 0;
+                                                delayTime = 0;
+                                                attackState = AttackState.Attack;
+                                            }
+                                            break;
+                                        }
                                 }
                                 break;
                             }
