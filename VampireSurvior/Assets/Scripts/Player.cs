@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.UI; //UGUI사용
 
 public class Player : MonoBehaviour
 {
@@ -21,10 +22,23 @@ public class Player : MonoBehaviour
     public float setBulletTime; //설정할 격발 시간
     public Camera_Move cam; //카메라
 
+    public enum HPState
+    {
+        None, HPDown, HPUp
+    }
+    public HPState hpState = HPState.None; //HP상태
+    [Header("플레이어HP")]
+    public float playerHP; //플레이어HP
+    private float maxHP; //전체HP
+    private float hpPer; //백분율HP
+    public float hpSpeed; //HP 속도
+    public Slider hpSlider; //HP슬라이더
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
         cc = GetComponent<CharacterController>(); //캐릭터 컨트롤러 초기화
+        maxHP = playerHP; //전체 HP 초기화
     }
 
     // Update is called once per frame
@@ -33,6 +47,7 @@ public class Player : MonoBehaviour
         PlayerMove();
         PlayerRotate();
         PlayerFire();
+        PlayerHP();
     }
 
     //플레이어 이동 함수
@@ -118,7 +133,6 @@ public class Player : MonoBehaviour
                 }
                 bulletTime = 0;
             }
-
             cam.CameraShakeOn(); //카메라 진동
         }
 
@@ -128,6 +142,24 @@ public class Player : MonoBehaviour
             bulletTime = 0; //총알 격발 시간 초기화
             cam.CameraShakeOff(); //카메라 진동 종료
             anim.SetTrigger("Fire"); //격발 애니메이션 실행
+        }
+    }
+
+    void PlayerHP()
+    {
+        switch (hpState) //HP 상태
+        {
+            case HPState.HPDown: //감소중 상태
+                {
+                    //Hp슬라이더의 값이 hpPer로 hpSpeed의 속도로 일정하게 이동해간다
+                    hpSlider.value = Mathf.MoveTowards(hpSlider.value, hpPer, hpSpeed * Time.deltaTime);
+                    //hp슬라이더의 값과 hpPer와 같다면
+                    if (hpSlider.value == hpPer)
+                    {
+                        hpState = HPState.None; //상태 초기화
+                    }
+                    break;
+                }
         }
     }
 
@@ -142,5 +174,10 @@ public class Player : MonoBehaviour
         Destroy(bullet, 1.0f); //1총 뒤에 총알 삭제
     }
 
-   
+    public void PlayerDamageOn(float damage)
+    {
+        playerHP -= damage; //플레이어에 HP에 Damage만큼 감소시킨다
+        hpPer = playerHP / maxHP; //현재 플레이어 HP를 전체 HP로 나눈다
+        hpState =  HPState.HPDown; //Hp감소 상태로 변경 
+    }
 }
