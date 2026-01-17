@@ -130,7 +130,7 @@ public class Player : MonoBehaviour
             }
             bulletTime = 0; //총알 격발 시간 초기화
 
-            anim.SetTrigger("Fire"); //격발 애니메이션 실행
+            anim.SetBool("Fire", true); //격발 애니메이션 실행
         }
 
         //왼쪽 마우스 버튼을 누르고 있다면
@@ -149,13 +149,20 @@ public class Player : MonoBehaviour
             }
             cam.CameraShakeOn(); //카메라 진동
         }
+        else
+        {
+            if(anim.GetBool("Fire1") == true)
+            {
+                anim.SetBool("Fire", false); //격발 애니메이션 실행
+            }
+        }
 
         //왼쪽마우스 버튼을 떈다면
         if (Input.GetButtonUp("Fire1"))
         {
             bulletTime = 0; //총알 격발 시간 초기화
             cam.CameraShakeOff(); //카메라 진동 종료
-            anim.SetTrigger("Fire"); //격발 애니메이션 실행
+            anim.SetBool("Fire", false); //격발 애니메이션 실행
         }
     }
 
