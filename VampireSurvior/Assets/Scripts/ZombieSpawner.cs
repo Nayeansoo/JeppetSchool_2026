@@ -3,6 +3,7 @@ using System.Collections.Generic;
 
 public class ZombieSpawner : MonoBehaviour
 {
+    public Transform target; //타겟
     public enum SpawnState
     {
         None, Spawn
@@ -23,6 +24,8 @@ public class ZombieSpawner : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        //스포너가 타겟을 추적한다
+        transform.position = new Vector3(target.position.x, target.position.y, target.position.z);
         switch(spawnState)
         {
             case SpawnState.Spawn: //소환중 상태
@@ -47,12 +50,13 @@ public class ZombieSpawner : MonoBehaviour
     void SpawnIntervalOn()
     {
         spawnInterval = Random.Range(0.5f, 3.0f); //0.5초 부터 3초 사이의 무작위 수 추출
-        spawnCount = Random.Range(1, 5); //1부터 5까지 사이의 무작위 수 추출
+        spawnCount = Random.Range(10, 30); //10부터 30까지 사이의 무작위 수 추출
     }
 
     void CreateZombie()
     {
         int n = Random.Range(0, spawnPos.Count); //0번부터 스폰 포스의 무작위 수 추출 
         GameObject zombie = Instantiate(zombiePrefab, spawnPos[n].position, spawnPos[n].rotation);
+        Destroy(zombie, 60.0f); //좀비를 60초 뒤에도 죽이지 않으면 자동으로 죽임
     }
 }

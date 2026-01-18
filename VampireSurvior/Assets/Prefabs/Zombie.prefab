@@ -149,6 +149,7 @@ MonoBehaviour:
   attackClip: {fileID: 1942785488916213143, guid: df45eaf8e6125d74d88e4d605fdf7a40, type: 3}
   zombieAttack: {fileID: 2187591227485946674}
   zombieHP: 1000
+  zombieExp: 10
 --- !u!1001 &2726053296581845360
 PrefabInstance:
   m_ObjectHideFlags: 0

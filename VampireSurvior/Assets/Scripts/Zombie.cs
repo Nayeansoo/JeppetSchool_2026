@@ -35,6 +35,9 @@ public class Zombie : MonoBehaviour
     [Header("좀비 HP")]
     public float zombieHP; //좀비HP
 
+    [Header("좀비 경험치")]
+    public float zombieExp; //좀비 경험치
+
     //기즈모를 그리는 함수
     private void OnDrawGizmos()
     {
@@ -182,6 +185,8 @@ public class Zombie : MonoBehaviour
         //좀비 HP가 damage보다 적거나 같을 경우
         else
         {
+            //경험치를 올려주는 함수 호출
+            GameObject.FindGameObjectWithTag("GameManager").GetComponent<GameManager>().PlayerExpUp(zombieExp);
             GetComponent<CharacterController>().enabled = false; //캐릭터 컨트롤러 사용금지
             agent.isStopped = true; //이동중지
             AnimOn(3); //사명 애니메이션
